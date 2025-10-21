@@ -1,47 +1,33 @@
 #!/usr/bin/env bash
 
-# Function to check if .NET 6.0 is installed
 check_dotnet_6() {
-    if command -v dotnet &> /dev/null; then
-        # Check if .NET 6.0 runtime/SDK is available
+    if command -v dotnet &>/dev/null; then
         if dotnet --list-sdks | grep -q "^6\."; then
-            return 0  # .NET 6.0 found
+            return 0
         fi
     fi
-    return 1  # .NET 6.0 not found
+    return 1
 }
 
-# Check for dotnet 6.0
 if ! check_dotnet_6; then
-    echo ".NET 6.0 is not found or not installed."
-    echo "Installing .NET 6.0..."
-    
-    # Add Microsoft package signing key and repository
-    wget https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
+    echo ".NET 6.0 not found. Installing using Ubuntu 22.04 repo (compatible)..."
+
+    wget https://packages.microsoft.com/config/ubuntu/22.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
     sudo dpkg -i packages-microsoft-prod.deb
     rm packages-microsoft-prod.deb
-    
-    # Update package list and install .NET 6.0
+
     sudo apt-get update
     sudo apt-get install -y apt-transport-https
     sudo apt-get update
     sudo apt-get install -y dotnet-sdk-6.0
-    
-    # Verify the installation
+
     echo "Installed .NET version:"
     dotnet --version
-    
-    # Check if installation was successful
-    if check_dotnet_6; then
-        echo ".NET 6.0 is successfully installed."
-    else
-        echo "Failed to install .NET 6.0. Please check for errors above."
-        exit 1
-    fi
 else
     echo ".NET 6.0 is already installed."
     dotnet --version
 fi
+
 
 
 # Run the application
