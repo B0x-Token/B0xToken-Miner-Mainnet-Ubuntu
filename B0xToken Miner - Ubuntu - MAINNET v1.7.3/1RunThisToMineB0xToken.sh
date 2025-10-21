@@ -57,7 +57,7 @@ fi
 
 
 # Run the application
-echo "Starting MAINNET B0xToken. Press Ctrl+C to stop gracefully."
+echo "Starting MAINNET v1.7.3 B0xToken. Press Ctrl+C to stop gracefully."
 echo "========================================="
 
 dotnet B0xToken.dll
