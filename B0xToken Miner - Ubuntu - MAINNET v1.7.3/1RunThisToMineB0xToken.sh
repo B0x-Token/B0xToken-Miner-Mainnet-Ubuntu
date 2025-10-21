@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+# Function to check if .NET 6.0 is installed
 check_dotnet_6() {
     if command -v dotnet &>/dev/null; then
         if dotnet --list-sdks | grep -q "^6\."; then
@@ -9,10 +10,29 @@ check_dotnet_6() {
     return 1
 }
 
-if ! check_dotnet_6; then
-    echo ".NET 6.0 not found. Installing using Ubuntu 22.04 repo (compatible)..."
+# Determine Ubuntu version
+UBUNTU_VERSION=$(lsb_release -rs)
 
-    wget https://packages.microsoft.com/config/ubuntu/22.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
+# Decide which repo version to use
+if [[ "$UBUNTU_VERSION" == "20.04" ]]; then
+    DOTNET_REPO_VERSION="20.04"
+elif [[ "$UBUNTU_VERSION" == "22.04" ]]; then
+    DOTNET_REPO_VERSION="22.04"
+elif [[ "$UBUNTU_VERSION" == "24.04" ]]; then
+    # Use 22.04 repo since 24.04 dropped .NET 6 support
+    DOTNET_REPO_VERSION="22.04"
+else
+    # Default fallback
+    DOTNET_REPO_VERSION="22.04"
+fi
+
+echo "Detected Ubuntu $UBUNTU_VERSION — using .NET repo for $DOTNET_REPO_VERSION."
+
+# Check if .NET 6 is installed
+if ! check_dotnet_6; then
+    echo ".NET 6.0 not found. Installing..."
+
+    wget https://packages.microsoft.com/config/ubuntu/${DOTNET_REPO_VERSION}/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
     sudo dpkg -i packages-microsoft-prod.deb
     rm packages-microsoft-prod.deb
 
@@ -23,11 +43,17 @@ if ! check_dotnet_6; then
 
     echo "Installed .NET version:"
     dotnet --version
+
+    if check_dotnet_6; then
+        echo ".NET 6.0 successfully installed."
+    else
+        echo "Failed to install .NET 6.0. Please check for errors."
+        exit 1
+    fi
 else
-    echo ".NET 6.0 is already installed."
+    echo ".NET 6.0 is already installed:"
     dotnet --version
 fi
-
 
 
 # Run the application
