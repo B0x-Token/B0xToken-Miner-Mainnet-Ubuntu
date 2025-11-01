@@ -37,8 +37,8 @@ if ! check_dotnet_6; then
         
         # Create directory and extract
         sudo mkdir -p /usr/share/dotnet
-        sudo tar zxf dotnet-runtime-6.0.36-linux-x64.tar.gz -C /usr/share/dotnet
-        rm dotnet-runtime-6.0.36-linux-x64.tar.gz
+        sudo tar zxf dotnet-runtime-6.0.428-linux-x64.tar.gz -C /usr/share/dotnet
+        rm dotnet-runtime-6.0.428-linux-x64.tar.gz
         
         # Create symbolic link
         sudo ln -sf /usr/share/dotnet/dotnet /usr/bin/dotnet
