@@ -39,7 +39,7 @@ else
         sudo apt-get install -y wget apt-transport-https
         
         # Download and install .NET 6.0 manually
-        wget https://download.visualstudio.microsoft.com/download/pr/4e766615-57e6-4b1d-a574-25eeb7a71107/9f95f74c33711e87eb691e6f66e0c9d5/dotnet-sdk-6.0.428-linux-x64.tar.gz
+        wget https://download.visualstudio.microsoft.com/download/pr/35b1b4d1-b8f4-4b5c-9ddf-e64a846ee50b/93cc198f1c48fe5c4853bd937226f570/dotnet-sdk-6.0.428-linux-x64.tar.gz
         
         # Create directory and extract
         sudo mkdir -p /usr/share/dotnet
