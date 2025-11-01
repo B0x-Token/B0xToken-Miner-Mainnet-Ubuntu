@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# Function to check if .NET 6.0 is installed
+# Function to check if .NET 6.0 runtime is installed
 check_dotnet_6() {
     if command -v dotnet &>/dev/null; then
-        if dotnet --list-sdks 2>/dev/null | grep -q "^6\."; then
+        if dotnet --list-runtimes | grep -q "Microsoft.NETCore.App 6\."; then
             return 0
         fi
     fi
@@ -11,97 +11,69 @@ check_dotnet_6() {
 # Determine Ubuntu version
 UBUNTU_VERSION=$(lsb_release -rs)
 echo "Detected Ubuntu $UBUNTU_VERSION"
-# Check if .NET 6 is already installed
+# Check if .NET 6 runtime is already installed
 if check_dotnet_6; then
-    echo ".NET 6.0 is already installed:"
-    dotnet --version
-else
-    echo ".NET 6.0 not found. Installing..."
-    
-    # Thorough cleanup of any broken installations
-    echo "Cleaning up any existing .NET installations..."
-    sudo apt remove 'dotnet*' -y 2>/dev/null
-    sudo apt remove 'aspnetcore*' -y 2>/dev/null
+    echo ".NET 6.0 Runtime is already installed:"
+    dotnet --list-runtimes
+fi
+
+if ! check_dotnet_6; then
+    echo ".NET 6.0 Runtime not found. Installing..."
+    # Clean up any broken installations
+    sudo apt remove dotnet-runtime-6.0 -y 2>/dev/null
     sudo apt autoremove -y
     sudo rm -rf /usr/share/dotnet 2>/dev/null
-    sudo rm -rf /usr/bin/dotnet 2>/dev/null
     sudo rm -rf ~/.dotnet 2>/dev/null
-    sudo rm -rf /etc/dotnet 2>/dev/null
-    sudo rm -f /etc/apt/sources.list.d/microsoft-prod.list 2>/dev/null
-    sudo rm -f /etc/apt/trusted.gpg.d/microsoft.gpg 2>/dev/null
-    
-    # For Ubuntu 24.04, use manual installation method
-    if [[ "$UBUNTU_VERSION" == "24.04" ]]; then
-        echo "Ubuntu 24.04 detected - using manual installation method..."
+    # For Ubuntu 22.04 and 24.04, use manual installation method
+    if [[ "$UBUNTU_VERSION" == "24.04" ]] || [[ "$UBUNTU_VERSION" == "22.04" ]]; then
+        echo "Ubuntu $UBUNTU_VERSION detected - using manual installation method..."
         
         # Install dependencies
         sudo apt-get update
         sudo apt-get install -y wget apt-transport-https
         
-        # Download and install .NET 6.0 manually
-        wget https://download.visualstudio.microsoft.com/download/pr/35b1b4d1-b8f4-4b5c-9ddf-e64a846ee50b/93cc198f1c48fe5c4853bd937226f570/dotnet-sdk-6.0.428-linux-x64.tar.gz
+        # Download and install .NET 6.0 Runtime manually
+        wget https://download.visualstudio.microsoft.com/download/pr/d0d7fabb-4221-441a-84ae-e94f59c8ab42/a7cd6251bd8ce5fac4baa1c057e4c5ed/dotnet-runtime-6.0.36-linux-x64.tar.gz
         
         # Create directory and extract
         sudo mkdir -p /usr/share/dotnet
-        sudo tar zxf dotnet-sdk-6.0.428-linux-x64.tar.gz -C /usr/share/dotnet
-        rm dotnet-sdk-6.0.428-linux-x64.tar.gz
+        sudo tar zxf dotnet-runtime-6.0.36-linux-x64.tar.gz -C /usr/share/dotnet
+        rm dotnet-runtime-6.0.36-linux-x64.tar.gz
         
         # Create symbolic link
         sudo ln -sf /usr/share/dotnet/dotnet /usr/bin/dotnet
         
         # Set environment variables
+        echo 'export DOTNET_ROOT=/usr/share/dotnet' >> ~/.bashrc
+        echo 'export PATH=$PATH:/usr/share/dotnet' >> ~/.bashrc
         export DOTNET_ROOT=/usr/share/dotnet
         export PATH=$PATH:/usr/share/dotnet
-        
-        if ! grep -q "DOTNET_ROOT" ~/.bashrc; then
-            echo 'export DOTNET_ROOT=/usr/share/dotnet' >> ~/.bashrc
-            echo 'export PATH=$PATH:/usr/share/dotnet' >> ~/.bashrc
-        fi
     else
-        # For Ubuntu 20.04 and 22.04, use package manager
-        if [[ "$UBUNTU_VERSION" == "20.04" ]]; then
-            DOTNET_REPO_VERSION="20.04"
-        elif [[ "$UBUNTU_VERSION" == "22.04" ]]; then
-            DOTNET_REPO_VERSION="22.04"
-        else
-            echo "Unsupported Ubuntu version: $UBUNTU_VERSION"
-            exit 1
-        fi
+        # For Ubuntu 20.04, use package manager
+        echo "Using .NET repo for Ubuntu 20.04"
         
-        echo "Using .NET repo for $DOTNET_REPO_VERSION"
-        
-        # Add Microsoft package repository
-        wget https://packages.microsoft.com/config/ubuntu/${DOTNET_REPO_VERSION}/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
+        wget https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
         sudo dpkg -i packages-microsoft-prod.deb
         rm packages-microsoft-prod.deb
         
-        # Update and install
         sudo apt-get update
         sudo apt-get install -y apt-transport-https
         sudo apt-get update
-        sudo apt-get install -y dotnet-sdk-6.0
+        sudo apt-get install -y dotnet-runtime-6.0
     fi
-    
     # Verify installation
     echo ""
     echo "Verifying installation..."
-    sleep 2  # Give system a moment to register the installation
-    
     if check_dotnet_6; then
-        echo "✓ .NET 6.0 successfully installed:"
-        dotnet --version
-        dotnet --list-sdks
+        echo "✓ .NET 6.0 Runtime successfully installed:"
+        dotnet --list-runtimes
     else
-        echo "✗ Failed to install .NET 6.0. Please check for errors."
-        echo "Attempting to diagnose..."
-        which dotnet
-        ls -la /usr/share/dotnet 2>/dev/null || echo "/usr/share/dotnet does not exist"
+        echo "✗ Failed to install .NET 6.0 Runtime. Please check for errors."
         exit 1
     fi
 fi
 
 # Run the application
-echo ""
 echo "Starting MAINNET v1.7.3 B0xToken. Press Ctrl+C to stop gracefully."
 echo "========================================="
 dotnet B0xToken.dll
