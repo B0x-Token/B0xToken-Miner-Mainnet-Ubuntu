@@ -33,12 +33,12 @@ if ! check_dotnet_6; then
         sudo apt-get install -y wget apt-transport-https
         
         # Download and install .NET 6.0 Runtime manually
-        wget https://download.visualstudio.microsoft.com/download/pr/35b1b4d1-b8f4-4b5c-9ddf-e64a846ee50b/93cc198f1c48fe5c4853bd937226f570/dotnet-sdk-6.0.428-linux-x64.tar.gz
+        wget https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/sdk-6.0.428-linux-x64-binaries
         
         # Create directory and extract
         sudo mkdir -p /usr/share/dotnet
-        sudo tar zxf dotnet-runtime-6.0.428-linux-x64.tar.gz -C /usr/share/dotnet
-        rm dotnet-runtime-6.0.428-linux-x64.tar.gz
+        sudo tar zxf dotnet-sdk-6.0.428-linux-x64.tar.gz -C /usr/share/dotnet
+        rm dotnet-sdk-6.0.428-linux-x64.tar.gz
         
         # Create symbolic link
         sudo ln -sf /usr/share/dotnet/dotnet /usr/bin/dotnet
